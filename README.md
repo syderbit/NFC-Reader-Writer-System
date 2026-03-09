@@ -1,23 +1,23 @@
-# NFC Reader/Writer System
+# 📡 NFC Reader/Writer System
 
 Sistem baca/tulis kartu NFC berbasis **Web Serial API** (Vue/TypeScript) dan **Arduino/ESP32** dengan modul PN532. Mendukung kartu **NTAG213/215/216** dan **MIFARE Classic 1K/4K**, dilengkapi verifikasi keaslian kartu menggunakan **NXP Originality Signature (ECDSA secp128r1)** dan **enkripsi AES-128** berbasis UID untuk mencegah clone data antar kartu.
 
 ---
 
-## Arsitektur Sistem
+## 🏗️ Arsitektur Sistem
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│         Browser (Vue/TypeScript/Javascript)         │
+│                  Browser (Vue/TypeScript)            │
 │                                                     │
-│   ┌─────────────┐        ┌──────────────────────┐   │
-│   │  UI / State │◄──────►│  libNFC.ts           │   │
-│   │  isConnected│        │  connectSerial()     │   │
-│   │  isWriting  │        │  disconnectSerial()  │   │
-│   └─────────────┘        │  readLoop()          │   │
-│                          │  handleResponse()    │   │
-│                          │  writeTag(payload)   │   │
-│                          └──────────┬───────────┘   │
+│   ┌─────────────┐        ┌──────────────────────┐  │
+│   │  UI / State │◄──────►│  libNFC.ts           │  │
+│   │  isConnected│        │  connectSerial()      │  │
+│   │  isWriting  │        │  disconnectSerial()   │  │
+│   └─────────────┘        │  readLoop()           │  │
+│                          │  handleResponse()     │  │
+│                          │  writeTag(payload)    │  │
+│                          └──────────┬───────────┘  │
 └─────────────────────────────────────┼───────────────┘
                                       │ Web Serial API
                                       │ USB / baudRate 115200
@@ -67,7 +67,7 @@ Sistem baca/tulis kartu NFC berbasis **Web Serial API** (Vue/TypeScript) dan **A
 
 ---
 
-## Struktur File
+## 📁 Struktur File
 
 ```
 project/
@@ -81,13 +81,16 @@ project/
 ├── NfcExtended.h        # class NfcExtended extends Adafruit_PN532
 │                        # readSig() via InCommunicateThru
 ├── ecc.h / ecc.c        # easy-ecc library (secp128r1)
+└── vue/
+    └── libNFC.ts        # connectSerial(), readLoop(),
+                         # handleResponse(), writeTag()
 ```
 
 ---
 
-## Alur Komunikasi
+## 🔄 Alur Komunikasi
 
-### Default: Baca Kartu Terus-menerus
+### 📖 Default: Baca Kartu Terus-menerus
 
 ```
 loop()
@@ -123,7 +126,7 @@ Browser readLoop()
         └─ case "READ" / "READ_UNVERIFIED" → update UI
 ```
 
-### Write Kartu
+### ✍️ Write Kartu
 
 ```
 Browser
@@ -156,11 +159,11 @@ loop()
 
 ---
 
-## Protokol Serial
+## 📨 Protokol Serial
 
 Semua pesan diakhiri `\n`, field dipisah `|`. Baudrate **115200**.
 
-### Arduino → Browser
+### ⬇️ Arduino → Browser
 
 | Pesan | Keterangan |
 |---|---|
@@ -178,13 +181,13 @@ Semua pesan diakhiri `\n`, field dipisah `|`. Baudrate **115200**.
 | `WRITE_FAIL\|REASON\|UID\|CARD_TYPE` | Tulis gagal setelah kartu terdeteksi |
 | `UNKNOWN_CMD\|cmd` | Perintah tidak dikenal |
 
-### Browser → Arduino
+### ⬆️ Browser → Arduino
 
 | Pesan | Keterangan |
 |---|---|
 | `WRITE\|payload` | Tulis data ke kartu (ASCII printable, maks 128 char) |
 
-### Reason Codes
+### ⚠️ Reason Codes
 
 | Reason | Konteks | Keterangan |
 |---|---|---|
@@ -201,7 +204,7 @@ Semua pesan diakhiri `\n`, field dipisah `|`. Baudrate **115200**.
 
 ---
 
-## Verifikasi NXP Originality Signature
+## 🔐 Verifikasi NXP Originality Signature
 
 Kartu NTAG asli buatan NXP menyimpan **ECDSA signature** yang di-sign NXP menggunakan private key mereka saat produksi. Sistem memverifikasi signature menggunakan **NXP public key (secp128r1)** via library `easy-ecc`.
 
@@ -229,7 +232,7 @@ Arduino saat handleRead() / handleWrite()
 
 ---
 
-## NfcExtended Class
+## 🔧 NfcExtended Class
 
 `NfcExtended` merupakan subclass dari `Adafruit_PN532` yang menambahkan fungsi `readSig()`. Fungsi `readdata()` di `Adafruit_PN532` bersifat `protected`, sehingga hanya bisa diakses dari dalam subclass — itulah alasan `readSig()` harus berada di dalam class ini dan tidak bisa dipindah ke file lain.
 
@@ -249,7 +252,7 @@ NfcExtended extends Adafruit_PN532
 
 ---
 
-## Enkripsi AES-128 Anti-Clone
+## 🛡️ Enkripsi AES-128 Anti-Clone
 
 Data yang ditulis ke kartu dienkripsi menggunakan **AES-128-ECB** dengan **UID kartu sebagai key**. Karena setiap kartu memiliki UID unik, data yang di-copy ke kartu lain tidak bisa didekripsi — kartu clone akan menghasilkan data garbage.
 
@@ -295,7 +298,9 @@ Clone data ke kartu B (UID: 11223344):
 
 
 
-### Arduino
+## 📦 Dependencies
+
+### 🤖 Arduino
 | Library | Keterangan |
 |---|---|
 | `Adafruit_PN532` | Driver modul PN532 via I2C |
@@ -303,16 +308,16 @@ Clone data ke kartu B (UID: 11223344):
 | `mbedtls/aes.h` | AES-128-ECB enkripsi/dekripsi (built-in ESP32) |
 | `Wire` | I2C komunikasi ke PN532 (built-in) |
 
-### Vue / TypeScript
-| API | Keterangan |
+### 🖥️ Vue / TypeScript
+| | Keterangan |
 |---|---|
-| `Web Serial API` | Komunikasi USB serial ke Arduino (Chrome/Edge only) |
-| `TextDecoder` | Decode `Uint8Array` → string, mode `stream: true` |
-| `TextEncoder` | Encode string → `Uint8Array` untuk TX |
+| 🌐 Web Serial API | Komunikasi USB serial ke Arduino (Chrome/Edge only) |
+| 📥 TextDecoder | Decode `Uint8Array` → string, mode `stream: true` |
+| 📤 TextEncoder | Encode string → `Uint8Array` untuk TX |
 
 ---
 
-## Kartu yang Didukung
+## 💳 Kartu yang Didukung
 
 | Kartu | UID | Originality Signature | Enkripsi Data | Format Data |
 |---|---|---|---|---|
